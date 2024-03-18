@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Longest Common Subsequence Visualization</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #visualization-container {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        #input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        label {
+            margin-bottom: 5px;
+        }
+        input {
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Longest Common Subsequence Visualization</h1>
+
+<div id="input-container">
+    <label for="sequence1">Enter Sequence 1:</label>
+    <input type="text" id="sequence1" placeholder="Enter sequence 1" />
+    <label for="sequence2">Enter Sequence 2:</label>
+    <input type="text" id="sequence2" placeholder="Enter sequence 2" />
+    <button onclick="visualizeLCS()">Visualize LCS</button>
+</div>
+
+<div id="visualization-container"></div>
+
+<script>
+    function visualizeLCS() {
+        const sequence1 = document.getElementById('sequence1').value;
+        const sequence2 = document.getElementById('sequence2').value;
+
+        if (!sequence1 || !sequence2) {
+            alert('Please enter both sequences.');
+            return;
+        }
+
+        calculateLCS(sequence1, sequence2);
+    }
+
+    function calculateLCS(sequence1, sequence2) {
+        const m = sequence1.length;
+        const n = sequence2.length;
+        const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+        for (let i = 1; i <= m; i++) {
+            for (let j = 1; j <= n; j++) {
+                if (sequence1[i - 1] === sequence2[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+
+        visualizeDPTable(dp, sequence1, sequence2);
+    }
+
+    function visualizeDPTable(dp, sequence1, sequence2) {
+        const container = d3.select('#visualization-container').html('');
+        const cellSize = 30;
+
+        const rows = dp.length;
+        const cols = dp[0].length;
+
+        const table = container.append('table');
+
+        const cells = table
+            .selectAll('tr')
+            .data(dp)
+            .enter()
+            .append('tr')
+            .selectAll('td')
+            .data(d => d)
+            .enter()
+            .append('td')
+            .attr('width', cellSize)
+            .attr('height', cellSize)
+            .style('border', '1px solid #ddd')
+            .style('text-align', 'center')
+            .style('font-size', '12px')
+            .style('background-color', d => (d === 0 ? '#f4f4f4' : '#fff'))
+            .text(d => d);
+
+        cells
+            .transition()
+            .delay((d, i) => i * 200)
+            .style('background-color', d => (d > 0 ? '#a3f1a3' : '#f4f4f4'));
+
+        cells
+            .filter(d => d > 0)
+            .transition()
+            .delay((d, i) => i * 200)
+            .text(d => `LCS: ${d}`)
+            .style('background-color', '#6bbf6b');
+
+        cells
+            .filter((d, i) => i % cols === 0)
+            .transition()
+            .delay((d, i) => i * 200)
+            .style('background-color', '#f4f4f4');
+
+        cells
+            .filter((_, i) => Math.floor(i / cols) === rows - 1)
+            .transition()
+            .delay((d, i) => i * 200)
+            .style('background-color', '#f4f4f4');
+
+        container.append('p').text('Dynamic Programming Table for Longest Common Subsequence');
+    }
+</script>
+
+</body>
+</html>

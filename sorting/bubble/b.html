@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort Visualizer</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="b.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="array-container" id="array-container"></div>
+
+    <div class="process-block" id="process-block"></div>
+
+    <button onclick="startBubbleSort()" class="btn btn-primary">Start Bubble Sort</button>
+    <button onclick="resetArray()" class="btn btn-secondary">Reset Array</button>
+
+    <div class="options">
+        <div class="options">
+            <label for="speedRange">Animation Speed:</label>
+            <input type="range" id="speedRange" min="0.1" max="2" step="0.1" value="1" class="form-control-range" />
+            <span id="speedLabel">Speed: 1</span>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="b.js"></script>
+
+</body>
+</html>

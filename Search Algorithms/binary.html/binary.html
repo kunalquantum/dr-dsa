@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Binary Search Visualizer</title>
+    <link rel="stylesheet" href="stylebin.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Binary Search Vizualization</h1>
+    <canvas id="binarySearchCanvas" width="800" height="300"></canvas>
+    <h1>Understand the process</h1>
+    <div id="process-box"></div>
+
+    <div class="input-container">
+        <label for="entryArray">Enter a sorted array (space-separated):</label>
+        <input type="text" id="entryArray" />
+    </div>
+    <div class="input-container">
+        <label for="entryTarget">Enter the number to search:</label>
+        <input type="text" id="entryTarget" />
+    </div>
+    <button onclick="searchOperation()">Search</button>
+</div>
+
+<script src="binjs.js"></script>
+
+</body>
+</html>

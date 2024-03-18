@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Algorithm Visualizer</title>
+  <style>
+    /* Reset some default styles */
+    body, h1, label {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+
+    h1 {
+      color: #3498db;
+      margin-bottom: 20px;
+    }
+
+    /* Form styling */
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #2c3e50;
+    }
+
+    input, button {
+      margin: 5px;
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    input {
+      width: 100px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    /* Visualization container */
+    #array-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .array-element {
+      margin: 0 5px;
+      padding: 15px;
+      border: 2px solid #3498db;
+      border-radius: 5px;
+      background-color: #fff;
+      overflow: hidden; /* Prevent the element from changing size during animation */
+    }
+
+    .highlighted {
+      background-color: #f39c12 !important;
+      color: #fff !important;
+    }
+
+    /* Explanation text */
+    #explanation {
+      font-size: 16px;
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    /* Process block */
+    #process-block {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .process-step {
+      margin: 5px;
+      padding: 10px;
+      border: 2px solid #3498db;
+      border-radius: 5px;
+      background-color: #fff;
+      color: #2c3e50;
+    }
+
+    /* Disabled state for buttons */
+    button[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+  <h1>Search Algorithm Visualizer</h1>
+
+  <!-- User input form -->
+  <form onsubmit="event.preventDefault(); startVisualisation();">
+    <label for="arraySize">Array Size:</label>
+    <input type="number" id="arraySize" min="1" value="15">
+
+    <label for="targetValue">Search Element:</label>
+    <input type="number" id="targetValue">
+
+    <label for="initialValues">Initial Array (comma-separated):</label>
+    <input type="text" id="initialValues">
+
+    <!-- Control buttons -->
+    <button type="submit">Start Visualisation</button>
+    <button type="button" onclick="resetVisualisation()">Reset</button>
+  </form>
+
+  <!-- Visualization container -->
+  <div id="array-container"></div>
+
+  <!-- Explanation text -->
+  <div id="explanation"></div>
+
+  <!-- Process block -->
+  <div id="process-block"></div>
+
+  <!-- External libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.0"></script>
+  <!-- JavaScript logic -->
+  <script>
+    // Function to start the linear search visualizer
+    async function startVisualisation() {
+      const arraySize = parseInt(document.getElementById("arraySize").value);
+      const targetValue = parseInt(document.getElementById("targetValue").value);
+      const initialValues = document.getElementById("initialValues").value.split(',').map(Number);
+
+      // Create array based on user input
+      const array = initialValues.length > 0
+        ? initialValues
+        : Array.from({ length: arraySize }, (_, i) => i + 1);
+
+      // Visualize linear search
+      await visualizeLinearSearch(array, targetValue);
+    }
+
+    // Function to visualize the linear search algorithm
+    async function visualizeLinearSearch(array, target) {
+      const arrayContainer = document.getElementById("array-container");
+      const processBlock = document.getElementById("process-block");
+      arrayContainer.innerHTML = "";
+      processBlock.innerHTML = "";
+
+      // Display array elements
+      displayArrayElements(array);
+
+      // Linear search loop
+      for (let i = 0; i < array.length; i++) {
+        await animateStepLinearSearch(array, i);
+
+        if (array[i] === target) {
+          highlightElement(i, true);
+          updateExplanation(`Element ${target} found at index ${i}.`);
+          return;
+        }
+      }
+
+      // If the loop completes, the element was not found
+      updateExplanation(`Element ${target} not found in the array.`);
+    }
+
+    // Function to animate each step of the linear search
+    function animateStepLinearSearch(array, index) {
+      return new Promise(resolve => {
+        anime({
+          targets: `.array-element:nth-child(${index + 1})`,
+          backgroundColor: '#3498db',
+          duration: 500,
+          easing: 'easeInOutQuad',
+          complete: () => {
+            highlightElement(index);
+            updateProcessBlock(index);
+            resolve();
+          }
+        });
+      });
+    }
+
+    // Function to highlight a specific element in the array
+    function highlightElement(index, found = false) {
+      const elements = document.getElementsByClassName("array-element");
+      for (const element of elements) {
+        element.classList.remove("highlighted");
+      }
+
+      const elementToHighlight = elements[index];
+      elementToHighlight.classList.add("highlighted");
+
+      if (!found) {
+        updateExplanation(`Checking element at index ${index}.`);
+      }
+    }
+
+    // Function to update the explanation text
+    function updateExplanation(message) {
+      document.getElementById("explanation").textContent = message;
+    }
+
+    // Function to update the process block
+    function updateProcessBlock(index) {
+      const processBlock = document.getElementById("process-block");
+      const stepInfo = document.createElement("div");
+      stepInfo.className = "process-step";
+      stepInfo.textContent = `Checking index: ${index}`;
+      processBlock.appendChild(stepInfo);
+    }
+
+    // Function to reset the visualization
+    function resetVisualisation() {
+      document.getElementById("array-container").innerHTML = "";
+      document.getElementById("explanation").textContent = "";
+      document.getElementById("process-block").innerHTML = "";
+    }
+
+    // Function to display array elements in the visualization container
+    function displayArrayElements(array) {
+      const arrayContainer = document.getElementById("array-container");
+      for (const element of array) {
+        const elementDiv = document.createElement("div");
+        elementDiv.className = "array-element";
+        elementDiv.textContent = element;
+        arrayContainer.appendChild(elementDiv);
+      }
+    }
+  </script>
+</body>
+</html>

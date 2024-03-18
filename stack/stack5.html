@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Interactive Stack Visualization</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #ffd700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            perspective: 1000px;
+        }
+        h1 {
+            color: #ffd700;
+        }
+        #stack-container {
+            position: relative;
+            width: 50px;
+            height: 250px;
+            margin-top: 50px;
+            transform-style: preserve-3d;
+        }
+        .stack-cube {
+            position: absolute;
+            width: 100%;
+            background-color: #ffd700;
+            color: #000;
+            text-align: center;
+            padding: 5px;
+            transform-origin: bottom center;
+            transition: background-color 0.3s ease-in-out;
+        }
+        #input-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        input, button {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 5px;
+            padding: 8px;
+            font-size: 16px;
+            background-color: #ffd700;
+            color: #000;
+            border: none;
+            cursor: pointer;
+        }
+        input {
+            width: 80px;
+        }
+        button:hover {
+            background-color: #c0a16b;
+        }
+        @keyframes stack-fall {
+            from {
+                transform: translateY(-1000px) rotateX(90deg);
+            }
+            to {
+                transform: translateY(0) rotateX(0deg);
+            }
+        }
+        @keyframes stack-rotate {
+            from {
+                transform: rotateY(0deg);
+            }
+            to {
+                transform: rotateY(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>3D Interactive Stack Visualization</h1>
+
+<div id="stack-container" onmouseover="startRotation()" onmouseout="stopRotation()"></div>
+<div id="input-container">
+    <label for="push-input">Enter value to push:</label>
+    <input type="number" id="push-input" value="0">
+    <button onclick="push()">Push</button>
+    <button onclick="pop()">Pop</button>
+</div>
+
+<script>
+    let stackData = [3, 5, 2, 7];
+    let rotationInterval;
+
+    const updateStack = () => {
+        const stackContainer = document.getElementById("stack-container");
+        stackContainer.innerHTML = "";
+        stackData.forEach((value, index) => {
+            const stackCube = document.createElement("div");
+            stackCube.className = "stack-cube";
+            stackCube.style.height = `${value * 10}px`;
+            stackCube.textContent = value;
+            stackCube.style.transform = `translateZ(${index * 15}px)`;
+            stackCube.style.backgroundColor = getRandomColor();
+            stackContainer.appendChild(stackCube);
+        });
+    };
+
+    const startRotation = () => {
+        rotationInterval = setInterval(() => {
+            document.getElementById("stack-container").style.animation = "stack-rotate 5s infinite linear";
+        }, 100);
+    };
+
+    const stopRotation = () => {
+        clearInterval(rotationInterval);
+        document.getElementById("stack-container").style.animation = "none";
+    };
+
+    const push = () => {
+        const inputValue = +document.getElementById("push-input").value;
+        if (!isNaN(inputValue)) {
+            stackData.push(inputValue);
+            updateStack();
+        }
+    };
+
+    const pop = () => {
+        if (stackData.length > 0) {
+            stackData.pop();
+            updateStack();
+        }
+    };
+
+    const getRandomColor = () => {
+        const letters = "0123456789ABCDEF";
+        let color = "#";
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+        updateStack();
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ways to Cover Distance Visualization</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #visualization-container {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        #input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        label {
+            margin-bottom: 5px;
+        }
+        input {
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #instructions {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #process-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Ways to Cover Distance Visualization</h1>
+
+<div id="input-container">
+    <label for="distance">Enter Distance:</label>
+    <input type="number" id="distance" placeholder="Enter distance" />
+    <button onclick="visualizeWays()">Visualize Ways</button>
+</div>
+
+<div id="visualization-container"></div>
+
+<div id="instructions">
+    <h3>How to Use:</h3>
+    <p>1. Enter a distance value in the input box.</p>
+    <p>2. Click the "Visualize Ways" button to see the dynamic programming table.</p>
+    <p>3. The table displays the number of ways to cover the given distance.</p>
+</div>
+
+<div id="process-container">
+    <h3>Process:</h3>
+    <ul id="process-list"></ul>
+</div>
+
+<script>
+    function visualizeWays() {
+        const distanceInput = document.getElementById('distance').value;
+        const distance = parseInt(distanceInput);
+
+        if (isNaN(distance) || distance < 0) {
+            alert('Please enter a valid non-negative distance.');
+            return;
+        }
+
+        calculateWays(distance);
+    }
+
+    function calculateWays(distance) {
+        const dp = Array.from({ length: distance + 1 }).fill(0);
+        const processList = [];
+
+        dp[0] = 1;
+
+        for (let i = 1; i <= distance; i++) {
+            for (let j = 1; j <= 3; j++) {
+                if (i - j >= 0) {
+                    dp[i] += dp[i - j];
+
+                    processList.push({
+                        i,
+                        j,
+                        value: dp.slice(),
+                        selected: i === distance
+                    });
+                }
+            }
+        }
+
+        visualizeDPTable(dp, processList);
+    }
+
+    function visualizeDPTable(dp, processList) {
+        const container = d3.select('#visualization-container').html('');
+        const cellSize = 30;
+
+        const n = dp.length;
+
+        const table = container.append('table');
+
+        for (let i = 0; i < n; i++) {
+            const row = table.append('tr');
+            for (let j = 0; j < 1; j++) {
+                const cell = row.append('td')
+                    .attr('width', cellSize)
+                    .attr('height', cellSize)
+                    .style('border', '1px solid #ddd')
+                    .style('text-align', 'center')
+                    .style('font-size', '12px')
+                    .style('background-color', processList.length > 0 ? (processList[0].selected ? '#a3f1a3' : '#f4f4f4') : '#f4f4f4')
+                    .text(processList.length > 0 ? processList[0].value[i] : '');
+
+                cell
+                    .transition()
+                    .delay(i * n * 50 + j * 50)
+                    .style('background-color', processList.length > 0 ? (processList[0].selected ? '#a3f1a3' : '#f4f4f4') : '#f4f4f4');
+            }
+        }
+
+        updateProcessList(processList);
+    }
+
+    function updateProcessList(processList) {
+        const processListContainer = d3.select('#process-list');
+        processListContainer.html('');
+
+        processList.forEach((step, index) => {
+            setTimeout(() => {
+                processListContainer
+                    .append('li')
+                    .text(`DP[${step.i}][${step.j}] = [${step.value}]`);
+            }, index * 50 * step.value.length);
+        });
+    }
+</script>
+
+</body>
+</html>

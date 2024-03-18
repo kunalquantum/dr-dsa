@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Longest Increasing Subsequence Visualization</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #visualization-container {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        #input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        label {
+            margin-bottom: 5px;
+        }
+        input {
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #instructions {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #process-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Longest Increasing Subsequence Visualization</h1>
+
+<div id="input-container">
+    <label for="sequence">Enter Sequence:</label>
+    <input type="text" id="sequence" placeholder="Enter sequence separated by spaces" />
+    <button onclick="visualizeLIS()">Visualize LIS</button>
+</div>
+
+<div id="visualization-container"></div>
+
+<div id="instructions">
+    <h3>How to Use:</h3>
+    <p>1. Enter a sequence of numbers separated by spaces in the input box.</p>
+    <p>2. Click the "Visualize LIS" button to see the dynamic programming table.</p>
+    <p>3. The table displays the length of the longest increasing subsequence at each step.</p>
+</div>
+
+<div id="process-container">
+    <h3>Process:</h3>
+    <ul id="process-list"></ul>
+</div>
+
+<script>
+    function visualizeLIS() {
+        const sequenceInput = document.getElementById('sequence').value;
+        const sequence = sequenceInput.split(' ').map(Number);
+
+        if (sequence.some(isNaN)) {
+            alert('Please enter valid numeric values separated by spaces.');
+            return;
+        }
+
+        calculateLIS(sequence);
+    }
+
+    function calculateLIS(sequence) {
+        const n = sequence.length;
+        const dp = Array.from({ length: n }).fill(1);
+
+        const processList = [];
+
+        for (let i = 1; i < n; i++) {
+            for (let j = 0; j < i; j++) {
+                if (sequence[i] > sequence[j] && dp[i] < dp[j] + 1) {
+                    dp[i] = dp[j] + 1;
+                }
+
+                processList.push({
+                    i,
+                    j,
+                    value: dp.slice(),
+                    selected: i === n - 1
+                });
+            }
+        }
+
+        visualizeDPTable(dp, processList);
+    }
+
+    function visualizeDPTable(dp, processList) {
+        const container = d3.select('#visualization-container').html('');
+        const cellSize = 30;
+
+        const n = dp.length;
+
+        const table = container.append('table');
+
+        for (let i = 0; i < n; i++) {
+            const row = table.append('tr');
+            for (let j = 0; j < n; j++) {
+                const cell = row.append('td')
+                    .attr('width', cellSize)
+                    .attr('height', cellSize)
+                    .style('border', '1px solid #ddd')
+                    .style('text-align', 'center')
+                    .style('font-size', '12px')
+                    .style('background-color', processList.length > 0 ? (processList[0].selected ? '#a3f1a3' : '#f4f4f4') : '#f4f4f4')
+                    .text(processList.length > 0 ? processList[0].value[j] : '');
+
+                cell
+                    .transition()
+                    .delay(i * n * 50 + j * 50)
+                    .style('background-color', processList.length > 0 ? (processList[0].selected ? '#a3f1a3' : '#f4f4f4') : '#f4f4f4');
+            }
+        }
+
+        updateProcessList(processList);
+    }
+
+    function updateProcessList(processList) {
+        const processListContainer = d3.select('#process-list');
+        processListContainer.html('');
+
+        processList.forEach((step, index) => {
+            setTimeout(() => {
+                processListContainer
+                    .append('li')
+                    .text(`DP[${step.i}][${step.j}] = [${step.value}]`);
+            }, index * 50 * step.value.length);
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Stack Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+        #stack-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 80vh;
+        }
+        .stack-bar {
+            width: 50px;
+            margin: 0 5px;
+            background-color: dodgerblue;
+            text-align: center;
+            color: white;
+            padding: 5px;
+        }
+        #input-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="stack-container"></div>
+<div id="input-container">
+    <label for="push-input">Enter value to push:</label>
+    <input type="number" id="push-input" value="0">
+    <button onclick="push()">Push</button>
+    <button onclick="pop()">Pop</button>
+</div>
+
+<script>
+    let stackData = [3, 5, 2, 7];
+
+    const updateStack = () => {
+        d3.select("#stack-container").selectAll(".stack-bar")
+            .data(stackData)
+            .join("div")
+            .attr("class", "stack-bar")
+            .style("height", d => `${d * 10}px`)
+            .text(d => d);
+    };
+
+    const push = () => {
+        const inputValue = +document.getElementById("push-input").value;
+        if (!isNaN(inputValue)) {
+            stackData.push(inputValue);
+            updateStack();
+        }
+    };
+
+    const pop = () => {
+        if (stackData.length > 0) {
+            stackData.pop();
+            updateStack();
+        }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+        updateStack();
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+/* Add generative effect class */
+.element {
+    text-align: center;
+    padding: 10px;
+    margin: 5px;
+    border: 2px solid #000;
+    transition: transform 0.5s ease-in-out;
+    opacity: 0; /* Initially set opacity to 0 for fade-in effect */
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+.queue-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.pointers {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.front-pointer,
+.rear-pointer {
+    width: 10px;
+    height: 10px;
+    background-color: #000;
+    border-radius: 50%;
+    margin: 0 5px;
+}
+
+.info-box {
+    margin-top: 20px;
+    padding: 10px;
+    border: 2px solid #000;
+    background-color: #fff;
+    width: 400px;
+    text-align: left;
+    overflow-y: auto;
+    max-height: 150px;
+    margin-bottom: 20px;
+}
+
+.input-container {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    margin-top: 10px;
+    cursor: pointer; /* Adding cursor pointer for better user experience */
+}
+
+.options {
+    margin-top: 10px;
+}
+/* queue.css */
+
+/* General Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+/* Queue Container Styling */
+.queue-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.element {
+    text-align: center;
+    padding: 10px;
+    margin: 5px;
+    border: 2px solid #000;
+    transition: transform 0.5s ease-in-out;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Pointers Styling */
+.pointers {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.front-pointer, .rear-pointer {
+    width: 10px;
+    height: 10px;
+    background-color: #000;
+    border-radius: 50%;
+    margin: 0 5px;
+}
+
+/* Info Box Styling */
+.info-box {
+    margin-top: 20px;
+    padding: 10px;
+    border: 2px solid #000;
+    background-color: #fff;
+    width: 400px;
+    text-align: left;
+    overflow-y: auto;
+    max-height: 150px;
+    margin-bottom: 20px;
+}
+
+/* Input Container Styling */
+.input-container {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Button Styling */
+button {
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* Options Styling */
+.options {
+    margin-top: 10px;
+}
+
+/* Input Range Styling */
+.form-control-range {
+    width: 80%;
+}
+
+/* Add Generative Effect Styling */
+.generative-effect {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    .info-box {
+        width: 100%;
+    }
+}

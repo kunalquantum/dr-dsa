@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimum Partition Visualization</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #visualization-container {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        #input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        label {
+            margin-bottom: 5px;
+        }
+        input {
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #instructions {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #process-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Minimum Partition Visualization</h1>
+
+<div id="input-container">
+    <label for="elements">Enter Array Elements:</label>
+    <input type="text" id="elements" placeholder="Enter array elements separated by commas" />
+    <button onclick="visualizeMinimumPartition()">Visualize Minimum Partition</button>
+</div>
+
+<div id="visualization-container"></div>
+
+<div id="instructions">
+    <h3>How to Use:</h3>
+    <p>1. Enter an array of numeric elements separated by commas in the input box.</p>
+    <p>2. Click the "Visualize Minimum Partition" button to see the dynamic programming table.</p>
+    <p>3. The table displays 'T' for true and 'F' for false, indicating whether a certain sum is achievable.</p>
+</div>
+
+<div id="process-container">
+    <h3>Process:</h3>
+    <ul id="process-list"></ul>
+</div>
+
+<script>
+    function visualizeMinimumPartition() {
+        const elementsInput = document.getElementById('elements').value;
+        const elements = elementsInput.split(',').map(Number);
+
+        if (elements.some(isNaN)) {
+            alert('Please enter valid numeric values separated by commas.');
+            return;
+        }
+
+        calculateMinimumPartition(elements);
+    }
+
+    function calculateMinimumPartition(elements) {
+        const n = elements.length;
+        const totalSum = elements.reduce((sum, element) => sum + element, 0);
+
+        let dp = Array.from({ length: n + 1 }, () => Array(totalSum + 1).fill(false));
+        
+        // Base case: Sum of 0 is always achievable
+        for (let i = 0; i <= n; i++) {
+            dp[i][0] = true;
+        }
+
+        const processList = [];
+
+        for (let i = 1; i <= n; i++) {
+            for (let j = 1; j <= totalSum; j++) {
+                dp[i][j] = dp[i - 1][j];
+
+                if (j >= elements[i - 1]) {
+                    dp[i][j] = dp[i][j] || dp[i - 1][j - elements[i - 1]];
+                }
+
+                processList.push({
+                    i,
+                    j,
+                    value: dp[i][j] ? 'T' : 'F'
+                });
+            }
+        }
+
+        visualizeDPTable(dp, processList);
+    }
+
+    function visualizeDPTable(dp, processList) {
+        const container = d3.select('#visualization-container').html('');
+        const cellSize = 30;
+
+        const rows = dp.length;
+        const cols = dp[0].length;
+
+        const table = container.append('table');
+
+        const cells = table
+            .selectAll('tr')
+            .data(dp)
+            .enter()
+            .append('tr')
+            .selectAll('td')
+            .data(d => d)
+            .enter()
+            .append('td')
+            .attr('width', cellSize)
+            .attr('height', cellSize)
+            .style('border', '1px solid #ddd')
+            .style('text-align', 'center')
+            .style('font-size', '12px')
+            .style('background-color', d => (d ? '#a3f1a3' : '#f4f4f4'))
+            .text(d => (d ? 'T' : 'F'));
+
+        cells
+            .transition()
+            .delay((d, i) => i * 200)
+            .style('background-color', d => (d ? '#a3f1a3' : '#f4f4f4'));
+
+        updateProcessList(processList);
+    }
+
+    function updateProcessList(processList) {
+        const processListContainer = d3.select('#process-list');
+        processListContainer.html('');
+
+        processList.forEach((step, index) => {
+            setTimeout(() => {
+                processListContainer
+                    .append('li')
+                    .text(`DP[${step.i}][${step.j}] = ${step.value}`);
+            }, index * 200);
+        });
+    }
+</script>
+
+</body>
+</html>

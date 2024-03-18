@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knapsack Problem Solver</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #visualization-container {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            position: relative;
+        }
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+        td {
+            background-color: #f4f4f4;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+        td:hover {
+            background-color: #a3f1a3;
+        }
+        .item-info {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 12px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .selected-item {
+            background-color: #4285f4;
+            color: white;
+        }
+        label {
+            margin-top: 10px;
+        }
+        input {
+            padding: 5px;
+        }
+        #summary {
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Knapsack Problem Solver</h1>
+
+<div>
+    <label for="weights">Enter Weights (comma-separated):</label>
+    <input type="text" id="weights" placeholder="e.g., 2,3,4,5,6" />
+</div>
+<div>
+    <label for="values">Enter Values (comma-separated):</label>
+    <input type="text" id="values" placeholder="e.g., 3,4,5,8,9" />
+</div>
+<div>
+    <label for="capacity">Enter Knapsack Capacity:</label>
+    <input type="number" id="capacity" placeholder="e.g., 10" />
+</div>
+
+<button onclick="visualizeKnapsack()">Visualize Knapsack</button>
+
+<div id="visualization-container"></div>
+<div id="summary"></div>
+
+<script>
+    function visualizeKnapsack() {
+        const weightsInput = document.getElementById('weights').value;
+        const valuesInput = document.getElementById('values').value;
+        const capacityInput = document.getElementById('capacity').value;
+
+        const weights = weightsInput.split(',').map(Number);
+        const values = valuesInput.split(',').map(Number);
+        const capacity = parseInt(capacityInput) || 10;
+
+        calculateKnapsack(weights, values, capacity);
+    }
+
+    function calculateKnapsack(weights, values, capacity) {
+        const m = weights.length;
+        const n = capacity;
+        const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+        for (let i = 1; i <= m; i++) {
+            for (let w = 1; w <= n; w++) {
+                if (weights[i - 1] <= w) {
+                    dp[i][w] = Math.max(dp[i - 1][w], values[i - 1] + dp[i - 1][w - weights[i - 1]]);
+                } else {
+                    dp[i][w] = dp[i - 1][w];
+                }
+            }
+        }
+
+        visualizeDPTable(dp, weights, values);
+    }
+
+    function visualizeDPTable(dp, weights, values) {
+        const container = d3.select('#visualization-container').html('');
+        const table = container.append('table');
+
+        // Create table header
+        const headerRow = table.append('tr');
+        headerRow.append('th').text('Items / Capacity');
+        for (let w = 0; w <= dp[0].length - 1; w++) {
+            headerRow.append('th').text(w);
+        }
+
+        // Populate the table
+        for (let i = 0; i <= dp.length - 1; i++) {
+            const row = table.append('tr');
+            row.append('td').text(i === 0 ? 'Capacity' : `Item ${i}`);
+            for (let w = 0; w <= dp[0].length - 1; w++) {
+                const cell = row.append('td').text(dp[i][w]);
+                if (i > 0 && w > 0) {
+                    cell.on('mouseover', () => showItemInfo(i, w));
+                    cell.on('mouseout', hideItemInfo);
+                }
+            }
+        }
+
+        container.append('p').text('Dynamic Programming Table for Knapsack Problem');
+        const selectedItems = reconstructSolution(dp, weights);
+        updateSummary(selectedItems);
+    }
+
+    function showItemInfo(itemIndex, capacityIndex) {
+        const itemInfo = d3.select('#visualization-container')
+            .append('div')
+            .classed('item-info', true);
+
+        const isSelected = weights[itemIndex - 1] <= capacityIndex && dp[itemIndex][capacityIndex] !== dp[itemIndex - 1][capacityIndex];
+        if (isSelected) {
+            itemInfo.classed('selected-item', true);
+        }
+
+        itemInfo.html(`
+            <div>Item ${itemIndex}</div>
+            <div>Weight: ${weights[itemIndex - 1]}</div>
+            <div>Value: ${values[itemIndex - 1]}</div>
+            ${isSelected ? '<div>Selected</div>' : ''}
+        `);
+    }
+
+    function hideItemInfo() {
+        d3.select('.item-info')
+            .transition()
+            .duration(200)
+            .style('opacity', 0)
+            .remove();
+    }
+
+    function reconstructSolution(dp, weights) {
+        const selectedItems = [];
+        let i = dp.length - 1;
+        let j = dp[0].length - 1;
+
+        while (i > 0 && j > 0) {
+            if (dp[i][j] !== dp[i - 1][j]) {
+                selectedItems.push(i);
+                j -= weights[i - 1];
+            }
+            i--;
+        }
+
+        return selectedItems.reverse();
+    }
+
+    function updateSummary(selectedItems) {
+        const summary = document.getElementById('summary');
+        if (selectedItems.length > 0) {
+            const totalValue = selectedItems.reduce((sum, item) => sum + values[item - 1], 0);
+            summary.innerHTML = `<b>Selected Items:</b> ${selectedItems.join(', ')} | <b>Total Value:</b> ${totalValue}`;
+        } else {
+            summary.innerHTML = '';
+        }
+    }
+</script>
+
+</body>
+</html>

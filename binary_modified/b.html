@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Binary Search Visualiser</title>
+  <style>
+    /* Add your styles here */
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    label {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #2c3e50;
+    }
+
+    input, button {
+      margin: 5px;
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+    }
+
+    input {
+      width: 100px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    #array-container {
+      display: flex;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    .array-element {
+      margin: 0 5px;
+      padding: 15px;
+      border: 2px solid #3498db;
+      border-radius: 5px;
+      transition: background-color 0.3s ease, color 0.3s ease; /* Added color transition */
+      background-color: #fff;
+    }
+
+    .highlighted {
+      background-color: #f39c12 !important; /* Added !important to override anime.js styles */
+      color: #fff !important; /* Added !important to override anime.js styles */
+    }
+
+    #explanation {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #2c3e50;
+      text-align: center;
+    }
+
+    #algorithm-block {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #2c3e50;
+      text-align: left;
+      max-width: 400px;
+      padding: 10px;
+      border: 2px solid #3498db;
+      border-radius: 5px;
+    }
+
+    #algorithm-steps {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #2c3e50;
+      text-align: left;
+      max-width: 400px;
+    }
+
+    button[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+  <h1>Binary Search Visualiser</h1>
+
+  <label for="arraySize">Array Size:</label>
+  <input type="number" id="arraySize" min="1" value="15">
+
+  <label for="targetValue">Target Value:</label>
+  <input type="number" id="targetValue">
+
+  <label for="initialValues">Initial Values (comma-separated):</label>
+  <input type="text" id="initialValues">
+
+  <button onclick="startVisualisation()">Start Visualisation</button>
+  <button onclick="resetVisualisation()">Reset</button>
+
+  <div id="array-container"></div>
+  <div id="explanation"></div>
+  <div id="algorithm-block"></div>
+  <div id="algorithm-steps"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.0"></script>
+  <script>
+    async function startVisualisation() {
+      const arraySize = document.getElementById("arraySize").value;
+      const targetValue = document.getElementById("targetValue").value;
+      const initialValues = document.getElementById("initialValues").value.split(',').map(Number);
+
+      const sortedArray = initialValues.length > 0 ? initialValues.sort((a, b) => a - b) : Array.from({ length: arraySize }, (_, i) => i + 1);
+
+      await visualizeBinarySearch(sortedArray, targetValue);
+    }
+
+    async function visualizeBinarySearch(array, target) {
+      const arrayContainer = document.getElementById("array-container");
+      arrayContainer.innerHTML = "";
+
+      for (const element of array) {
+        const elementDiv = document.createElement("div");
+        elementDiv.className = "array-element";
+        elementDiv.textContent = element;
+        arrayContainer.appendChild(elementDiv);
+      }
+
+      let low = 0;
+      let high = array.length - 1;
+      let mid;
+
+      while (low <= high) {
+        mid = Math.floor((low + high) / 2);
+        await animateStep(array, low, high, mid);
+
+        if (array[mid] === target) {
+          highlightElement(mid, true);
+          updateExplanation(`Element ${target} found at index ${mid}.`);
+          updateAlgorithmBlock(array, low, high, mid, "found");
+          return;
+        } else if (array[mid] < target) {
+          low = mid + 1;
+          updateAlgorithmBlock(array, low, high, mid, "greater");
+        } else {
+          high = mid - 1;
+          updateAlgorithmBlock(array, low, high, mid, "lesser");
+        }
+      }
+
+      updateExplanation(`Element ${target} not found in the array.`);
+      updateAlgorithmBlock(array, low, high, mid, "not found");
+    }
+
+    function animateStep(array, low, high, mid) {
+      return new Promise(resolve => {
+        anime({
+          targets: `.array-element:nth-child(n+${low + 1}):nth-child(-n+${high + 1})`,
+          backgroundColor: (el, i) => (i + low <= high && i + low >= low) ? '#3498db' : '#fff',
+          duration: 500,
+          easing: 'easeInOutQuad',
+          complete: () => {
+            setTimeout(() => {
+              highlightElement(mid);
+              resolve();
+            }, 500);
+          }
+        });
+      });
+    }
+
+    function highlightElement(index, found = false) {
+      const elements = document.getElementsByClassName("array-element");
+      for (const element of elements) {
+        element.classList.remove("highlighted");
+      }
+
+      const elementToHighlight = elements[index];
+      elementToHighlight.classList.add("highlighted");
+
+      if (found) {
+        anime({
+          targets: elementToHighlight,
+          backgroundColor: '#f39c12',
+          color: '#fff',
+          duration: 500,
+          easing: 'easeInOutQuad',
+          complete: () => {
+            updateExplanation(`Checking element at index ${index}.`);
+          }
+        });
+      } else {
+        updateExplanation(`Checking element at index ${index}.`);
+      }
+    }
+
+    function updateExplanation(message) {
+      document.getElementById("explanation").textContent = message;
+    }
+
+    function updateAlgorithmBlock(array, low, high, mid, status) {
+      const algorithmBlock = document.getElementById("algorithm-block");
+      const algorithmSteps = document.getElementById("algorithm-steps");
+
+      switch (status) {
+        case "found":
+          algorithmBlock.innerHTML = `
+            <strong>Binary Search Algorithm</strong>
+            <br>Array: [${array.join(', ')}]
+            <br>Low: ${low}, High: ${high}, Mid: ${mid}
+            <br><strong>Element Found:</strong> ${array[mid]} at index ${mid}
+          `;
+          break;
+        case "greater":
+          algorithmSteps.innerHTML += `<li>Element ${array[mid]} at index ${mid} is greater than the target value. Setting High to ${mid - 1}.</li>`;
+          break;
+        case "lesser":
+          algorithmSteps.innerHTML += `<li>Element ${array[mid]} at index ${mid} is less than the target value. Setting Low to ${mid + 1}.</li>`;
+          break;
+        case "not found":
+          algorithmBlock.innerHTML = `
+            <strong>Binary Search Algorithm</strong>
+            <br>Array: [${array.join(', ')}]
+            <br>Low: ${low}, High: ${high}, Mid: ${mid}
+            <br><strong>Element Not Found:</strong> Target value ${array[mid]} not present in the array.
+          `;
+          break;
+      }
+    }
+
+    function resetVisualisation() {
+      document.getElementById("array-container").innerHTML = "";
+      document.getElementById("explanation").textContent = "";
+      document.getElementById("algorithm-block").textContent = "";
+      document.getElementById("algorithm-steps").innerHTML = "";
+    }
+  </script>
+</body>
+</html>

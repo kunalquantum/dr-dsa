@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subset Sum Problem Visualization</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        #visualization-container {
+    margin-top: 20px;
+    width: 80%;
+    max-width: 800px;
+    overflow-x: auto; /* Add this line */
+    overflow-y: hidden; /* Add this line */
+}
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #input-container {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            margin-bottom: 5px;
+        }
+        input {
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+     
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+        #summary {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        #process-block {
+            margin-top: 20px;
+            text-align: left;
+            max-width: 600px;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        #process-block.show {
+            opacity: 1;
+        }
+        .highlight {
+            background-color: #a3f1a3;
+        }
+        .non-highlight {
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Subset Sum Problem Visualization</h1>
+
+<div id="input-container">
+    <label for="numbers">Enter Numbers (comma-separated):</label>
+    <input type="text" id="numbers" placeholder="Enter numbers" />
+    <label for="target">Enter Target Sum:</label>
+    <input type="number" id="target" placeholder="Enter target sum" />
+    <button onclick="visualizeSubsetSum()">Visualize Subset Sum</button>
+</div>
+
+<div id="visualization-container"></div>
+<div id="summary"></div>
+<div id="process-block"></div>
+
+<script>
+    function visualizeSubsetSum() {
+        const numbersInput = document.getElementById('numbers').value;
+        const target = +document.getElementById('target').value;
+
+        const numbers = numbersInput.split(',').map(Number);
+
+        if (!numbersInput || isNaN(target)) {
+            alert('Please enter valid inputs.');
+            return;
+        }
+
+        calculateSubsetSum(numbers, target);
+    }
+
+    function calculateSubsetSum(numbers, target) {
+        const n = numbers.length;
+        const dp = Array.from({ length: n + 1 }, () => Array(target + 1).fill(false));
+
+        for (let i = 0; i <= n; i++) {
+            dp[i][0] = true;
+        }
+
+        for (let i = 1; i <= n; i++) {
+            for (let j = 1; j <= target; j++) {
+                if (numbers[i - 1] <= j) {
+                    dp[i][j] = dp[i - 1][j] || dp[i - 1][j - numbers[i - 1]];
+                } else {
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+
+        visualizeDPTable(dp, numbers);
+        visualizeProcess(dp, numbers, target);
+    }
+
+    function visualizeDPTable(dp, numbers) {
+        const container = d3.select('#visualization-container').html('');
+        const table = container.append('table');
+        const rows = dp.length;
+        const cols = dp[0].length;
+
+        // Table header
+        const thead = table.append('thead');
+        const headerRow = thead.append('tr');
+        headerRow.selectAll('th')
+            .data(['Numbers \\ Target Sum', ...Array.from({ length: cols - 1 }, (_, i) => i)])
+            .enter().append('th')
+            .text(d => (d === 'Numbers \\ Target Sum') ? d : `Sum ${d}`);
+
+        // Table body
+        const tbody = table.append('tbody');
+        tbody.selectAll('tr')
+            .data(dp)
+            .enter().append('tr')
+            .selectAll('td')
+            .data((d, i) => i === 0 ? ['Numbers', ...d] : [numbers[i - 1], ...d])
+            .enter().append('td')
+            .style('background-color', d => d ? '#f4f4f4' : '#fff')
+            .text(d => (d === true || d === false) ? (d ? '✓' : '✗') : d)
+            .classed('highlight', d => typeof d === 'boolean' && d)
+            .classed('non-highlight', d => typeof d === 'boolean' && !d)
+            .transition()
+            .delay((_, i) => i * 50)
+            .style('background-color', d => d ? '#a3f1a3' : '#fff');
+    }
+
+    function visualizeProcess(dp, numbers, target) {
+        const processBlock = document.getElementById('process-block');
+        processBlock.innerHTML = '<h3>Process</h3>';
+        processBlock.classList.add('show');
+
+        const n = numbers.length;
+        let subsetSum = target;
+        const subset = [];
+
+        for (let i = n; i > 0 && subsetSum > 0; i--) {
+            if (dp[i - 1][subsetSum]) {
+                continue;
+            } else {
+                subset.push(numbers[i - 1]);
+                subsetSum -= numbers[i - 1];
+            }
+        }
+
+        let stepsHTML = '<p>Step-by-step solution:</p>';
+        for (let i = subset.length - 1; i >= 0; i--) {
+            stepsHTML += `<p>Include number ${subset[i]}</p>`;
+        }
+        if (subsetSum === 0) {
+            stepsHTML += '<p>Subset with the target sum found.</p>';
+        } else {
+            stepsHTML += '<p>No subset with the target sum found.</p>';
+        }
+
+        // Explanation of the DP table
+        stepsHTML += '<p>Explanation of the DP table:</p>';
+        stepsHTML += '<ul>';
+        stepsHTML += '<li>The DP table represents whether it\'s possible to achieve a specific target sum using subsets of the provided numbers.</li>';
+        stepsHTML += '<li>Each row corresponds to a number from the input list, and each column corresponds to a target sum from 0 to the specified target sum.</li>';
+        stepsHTML += '<li>The value in each cell indicates whether it\'s possible to achieve the target sum using the numbers up to the current row.</li>';
+        stepsHTML += '<li>If a target sum is achievable, the corresponding cell will be marked with a checkmark (✓); otherwise, it will be marked with a cross (✗).</li>';
+        stepsHTML += '</ul>';
+
+        processBlock.innerHTML += stepsHTML;
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animated Binary Tree Visualizer</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    #canvas-container {
+        position: relative;
+        margin: 20px auto;
+        width: calc(100% - 40px);
+        overflow-x: auto;
+        overflow-y: auto; /* Enable vertical scrolling */
+        white-space: nowrap;
+    }
+
+    #canvas {
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        display: inline-block;
+    }
+
+    #controls {
+        text-align: center;
+    }
+
+    #value-label {
+        font-size: 16px;
+    }
+
+    #entry-value {
+        font-size: 16px;
+        padding: 5px;
+        margin-bottom: 10px;
+    }
+
+    #insert-button {
+        font-size: 16px;
+        padding: 8px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+
+    #process-block {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        min-height: 100px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+</style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="canvas" width="1200" height="600"></canvas>
+    </div>
+    <div id="controls">
+        <label id="value-label" for="entry-value">Enter a value to insert into the binary tree:</label>
+        <input type="number" id="entry-value" name="entry-value">
+        <button id="insert-button">Insert</button>
+    </div>
+    <div id="process-block"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var canvas = document.getElementById("canvas");
+            var ctx = canvas.getContext("2d");
+            var nodeRadius = 20;
+            var edgeWidth = 2;
+            var root = null;
+            var xDiff = 150;
+            var yDiff = 100;
+            var processBlock = document.getElementById("process-block");
+
+            function Node(value) {
+                this.value = value;
+                this.left = null;
+                this.right = null;
+            }
+
+            function insertNode(value) {
+                root = _insertNode(root, value);
+                animateInsert(value);
+            }
+
+            function _insertNode(node, value) {
+                if (node === null) {
+                    return new Node(value);
+                }
+
+                if (value < node.value) {
+                    node.left = _insertNode(node.left, value);
+                    updateProcessBlock("Inserting " + value + " into the left subtree of " + node.value);
+                } else {
+                    node.right = _insertNode(node.right, value);
+                    updateProcessBlock("Inserting " + value + " into the right subtree of " + node.value);
+                }
+
+                return node;
+            }
+
+            function animateInsert(value) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawTree(root, canvas.width / 2, 50, 300);
+                generateTextEffect("Inserting " + value + " into the binary tree");
+            }
+
+            function drawTree(node, x, y, width) {
+                if (node !== null) {
+                    drawNode(x, y, node.value);
+                    if (node.left !== null) {
+                        drawEdge(x, y, x - width, y + yDiff);
+                        drawTree(node.left, x - width, y + yDiff, width / 2);
+                    }
+                    if (node.right !== null) {
+                        drawEdge(x, y, x + width, y + yDiff);
+                        drawTree(node.right, x + width, y + yDiff, width / 2);
+                    }
+                }
+            }
+
+            function drawNode(x, y, value) {
+                ctx.beginPath();
+                ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
+                ctx.strokeStyle = "black";
+                ctx.fillStyle = "white";
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+                ctx.font = "16px Arial";
+                ctx.fillStyle = "black";
+                ctx.textAlign = "center";
+                ctx.fillText(value, x, y + 5);
+            }
+
+            function drawEdge(x1, y1, x2, y2) {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1 + nodeRadius);
+                ctx.lineTo(x2, y2 - nodeRadius);
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = edgeWidth;
+                ctx.stroke();
+            }
+
+            function generateTextEffect(text) {
+                var x = canvas.width / 2;
+                var y = canvas.height - 70;
+                var index = 0;
+                var interval = setInterval(function () {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawTree(root, canvas.width / 2, 50, 300);
+                    ctx.font = "16px Arial";
+                    ctx.fillStyle = "red";
+                    ctx.textAlign = "center";
+                    ctx.fillText(text[index], x, y);
+                    index++;
+                    if (index === text.length) {
+                        clearInterval(interval);
+                    }
+                }, 100);
+            }
+
+            function updateProcessBlock(text) {
+                var p = document.createElement("p");
+                p.textContent = text;
+                processBlock.appendChild(p);
+                // Adjust the height of the process block
+                processBlock.style.height = processBlock.scrollHeight + "px";
+            }
+
+            document.getElementById("insert-button").addEventListener("click", function () {
+                var value = parseInt(document.getElementById("entry-value").value);
+                if (!isNaN(value)) {
+                    insertNode(value);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
